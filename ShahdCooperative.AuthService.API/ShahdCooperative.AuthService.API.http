@@ -1,0 +1,6 @@
+@ShahdCooperative.AuthService.API_HostAddress = http://localhost:5225
+
+GET {{ShahdCooperative.AuthService.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
