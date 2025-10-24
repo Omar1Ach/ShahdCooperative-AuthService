@@ -20,6 +20,7 @@ public class RegisterCommandHandlerTests
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IConfiguration> _configurationMock;
     private readonly Mock<IMessagePublisher> _messagePublisherMock;
+    private readonly Mock<IEmailService> _emailServiceMock;
     private readonly RegisterCommandHandler _handler;
 
     public RegisterCommandHandlerTests()
@@ -32,6 +33,7 @@ public class RegisterCommandHandlerTests
         _mapperMock = new Mock<IMapper>();
         _configurationMock = new Mock<IConfiguration>();
         _messagePublisherMock = new Mock<IMessagePublisher>();
+        _emailServiceMock = new Mock<IEmailService>();
 
         SetupConfiguration();
 
@@ -43,7 +45,8 @@ public class RegisterCommandHandlerTests
             _tokenServiceMock.Object,
             _mapperMock.Object,
             _configurationMock.Object,
-            _messagePublisherMock.Object
+            _messagePublisherMock.Object,
+            _emailServiceMock.Object
         );
     }
 
@@ -116,6 +119,9 @@ public class RegisterCommandHandlerTests
         _messagePublisherMock.Setup(x => x.PublishAsync(It.IsAny<object>(), It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
+        _emailServiceMock.Setup(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -165,6 +171,9 @@ public class RegisterCommandHandlerTests
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<User>()))
             .Returns(new UserDto());
 
+        _emailServiceMock.Setup(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
@@ -210,6 +219,9 @@ public class RegisterCommandHandlerTests
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<User>()))
             .Returns(new UserDto());
 
+        _emailServiceMock.Setup(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
@@ -250,6 +262,9 @@ public class RegisterCommandHandlerTests
 
         _auditLogRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<AuditLog>()))
             .ReturnsAsync(Guid.NewGuid());
+
+        _emailServiceMock.Setup(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
 
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<User>()))
             .Returns(new UserDto());
@@ -300,6 +315,9 @@ public class RegisterCommandHandlerTests
         _messagePublisherMock.Setup(x => x.PublishAsync(It.IsAny<object>(), It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
+        _emailServiceMock.Setup(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
@@ -340,6 +358,9 @@ public class RegisterCommandHandlerTests
 
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<User>()))
             .Returns(new UserDto());
+
+        _emailServiceMock.Setup(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);

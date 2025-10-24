@@ -1,9 +1,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ShahdCooperative.AuthService.Application.Commands.ChangePassword;
+using ShahdCooperative.AuthService.Application.Commands.ForgotPassword;
 using ShahdCooperative.AuthService.Application.Commands.Login;
 using ShahdCooperative.AuthService.Application.Commands.Logout;
 using ShahdCooperative.AuthService.Application.Commands.RefreshToken;
 using ShahdCooperative.AuthService.Application.Commands.Register;
+using ShahdCooperative.AuthService.Application.Commands.ResetPassword;
+using ShahdCooperative.AuthService.Application.Commands.VerifyEmail;
 using ShahdCooperative.AuthService.Application.DTOs;
 
 namespace ShahdCooperative.AuthService.API.Controllers;
@@ -78,5 +82,79 @@ public class AuthController : ControllerBase
         }
 
         return BadRequest(new { message = "Invalid refresh token" });
+    }
+
+    /// <summary>
+    /// Verify email address with verification token
+    /// </summary>
+    [HttpPost("verify-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+    {
+        var command = new VerifyEmailCommand(request.Token);
+        var result = await _mediator.Send(command);
+
+        if (result)
+        {
+            return Ok(new { message = "Email verified successfully" });
+        }
+
+        return BadRequest(new { message = "Invalid or expired verification token" });
+    }
+
+    /// <summary>
+    /// Request password reset token
+    /// </summary>
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var command = new ForgotPasswordCommand(request.Email);
+        await _mediator.Send(command);
+
+        // Always return success to prevent email enumeration
+        return Ok(new { message = "If the email exists, a password reset link has been sent" });
+    }
+
+    /// <summary>
+    /// Reset password using reset token
+    /// </summary>
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var command = new ResetPasswordCommand(request.Token, request.NewPassword);
+        var result = await _mediator.Send(command);
+
+        if (result)
+        {
+            return Ok(new { message = "Password reset successfully" });
+        }
+
+        return BadRequest(new { message = "Invalid or expired reset token" });
+    }
+
+    /// <summary>
+    /// Change password for authenticated user
+    /// </summary>
+    [HttpPost("change-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        // TODO: Get UserId from JWT claims when authentication is added
+        // var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var command = new ChangePasswordCommand(request.UserId, request.CurrentPassword, request.NewPassword);
+        var result = await _mediator.Send(command);
+
+        if (result)
+        {
+            return Ok(new { message = "Password changed successfully" });
+        }
+
+        return BadRequest(new { message = "Failed to change password" });
     }
 }

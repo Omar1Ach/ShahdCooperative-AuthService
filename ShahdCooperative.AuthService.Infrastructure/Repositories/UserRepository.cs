@@ -184,4 +184,49 @@ public class UserRepository : IUserRepository
         using var connection = CreateConnection();
         await connection.ExecuteAsync(sql, new { UserId = userId, LastLoginAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
     }
+
+    public async Task UpdatePasswordAsync(Guid userId, string passwordHash, string passwordSalt)
+    {
+        const string sql = @"
+            UPDATE Security.Users
+            SET PasswordHash = @PasswordHash, PasswordSalt = @PasswordSalt, UpdatedAt = @UpdatedAt
+            WHERE Id = @UserId";
+
+        using var connection = CreateConnection();
+        await connection.ExecuteAsync(sql, new
+        {
+            UserId = userId,
+            PasswordHash = passwordHash,
+            PasswordSalt = passwordSalt,
+            UpdatedAt = DateTime.UtcNow
+        });
+    }
+
+    public async Task VerifyEmailAsync(Guid userId)
+    {
+        const string sql = @"
+            UPDATE Security.Users
+            SET IsEmailVerified = 1,
+                EmailVerificationToken = NULL,
+                EmailVerificationExpiry = NULL,
+                UpdatedAt = @UpdatedAt
+            WHERE Id = @UserId";
+
+        using var connection = CreateConnection();
+        await connection.ExecuteAsync(sql, new { UserId = userId, UpdatedAt = DateTime.UtcNow });
+    }
+
+    public async Task<User?> GetByEmailVerificationTokenAsync(string token)
+    {
+        const string sql = @"
+            SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
+                   EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
+                   PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
+                   CreatedAt, UpdatedAt, IsDeleted
+            FROM Security.Users
+            WHERE EmailVerificationToken = @Token AND IsDeleted = 0";
+
+        using var connection = CreateConnection();
+        return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Token = token });
+    }
 }

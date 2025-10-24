@@ -6,6 +6,7 @@ using ShahdCooperative.AuthService.Domain.Entities;
 using ShahdCooperative.AuthService.Domain.Enums;
 using ShahdCooperative.AuthService.Domain.Events;
 using ShahdCooperative.AuthService.Domain.Interfaces;
+using System.Security.Cryptography;
 
 namespace ShahdCooperative.AuthService.Application.Commands.Register;
 
@@ -19,6 +20,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
     private readonly IMessagePublisher _messagePublisher;
+    private readonly IEmailService _emailService;
 
     public RegisterCommandHandler(
         IUserRepository userRepository,
@@ -28,7 +30,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         ITokenService tokenService,
         IMapper mapper,
         IConfiguration configuration,
-        IMessagePublisher messagePublisher)
+        IMessagePublisher messagePublisher,
+        IEmailService emailService)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
@@ -38,6 +41,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         _mapper = mapper;
         _configuration = configuration;
         _messagePublisher = messagePublisher;
+        _emailService = emailService;
     }
 
     public async Task<LoginResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -51,6 +55,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         // Hash password
         var passwordHash = _passwordHasher.HashPassword(request.Password, out var salt);
 
+        // Generate email verification token
+        var verificationToken = GenerateSecureToken();
+
         // Create user
         var user = new User
         {
@@ -60,12 +67,24 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
             Role = nameof(UserRole.Customer),
             IsActive = true,
             IsEmailVerified = false,
+            EmailVerificationToken = verificationToken,
+            EmailVerificationExpiry = DateTime.UtcNow.AddHours(24), // Token expires in 24 hours
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
         var userId = await _userRepository.CreateAsync(user);
         user.Id = userId;
+
+        // Send verification email
+        try
+        {
+            await _emailService.SendEmailVerificationAsync(user.Email, verificationToken);
+        }
+        catch (Exception)
+        {
+            // Log error but don't fail the request
+        }
 
         // Generate tokens
         var accessToken = _tokenService.GenerateAccessToken(user);
@@ -119,5 +138,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
             ExpiresAt = DateTime.UtcNow.AddMinutes(accessTokenExpiryMinutes),
             User = _mapper.Map<UserDto>(user)
         };
+    }
+
+    private static string GenerateSecureToken()
+    {
+        var randomBytes = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 }

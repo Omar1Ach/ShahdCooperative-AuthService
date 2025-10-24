@@ -15,4 +15,7 @@ public interface IUserRepository
     Task ResetFailedLoginAttemptsAsync(Guid userId);
     Task SetLockoutEndAsync(Guid userId, DateTime? lockoutEnd);
     Task UpdateLastLoginAsync(Guid userId);
+    Task UpdatePasswordAsync(Guid userId, string passwordHash, string passwordSalt);
+    Task VerifyEmailAsync(Guid userId);
+    Task<User?> GetByEmailVerificationTokenAsync(string token);
 }
