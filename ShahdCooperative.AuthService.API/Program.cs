@@ -105,15 +105,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// Enable Swagger for testing
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "ShahdCooperative Auth Service API v1");
-        options.RoutePrefix = "swagger";
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "ShahdCooperative Auth Service API v1");
+    options.RoutePrefix = "swagger";
+});
 
 app.UseHttpsRedirection();
 
