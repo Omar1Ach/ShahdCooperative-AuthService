@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<IExternalLoginRepository, ExternalLoginRepository>();
 
         // Register services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();

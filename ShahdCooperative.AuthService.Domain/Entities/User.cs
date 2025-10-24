@@ -27,6 +27,9 @@ public class User
     public string? TwoFactorSecret { get; set; }
     public string? BackupCodes { get; set; } // JSON array of hashed backup codes
 
+    // External Login Support
+    public bool HasPassword { get; set; } = true; // False if user only uses external login
+
     // Navigation property for profile (loaded separately with Dapper)
     public UserProfile? Profile { get; set; }
 }

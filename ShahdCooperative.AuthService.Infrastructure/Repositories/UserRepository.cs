@@ -25,7 +25,7 @@ public class UserRepository : IUserRepository
             SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
                    EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
                    PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes
+                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes, HasPassword
             FROM Security.Users
             WHERE Id = @Id AND IsDeleted = 0";
 
@@ -39,7 +39,7 @@ public class UserRepository : IUserRepository
             SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
                    EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
                    PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes
+                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes, HasPassword
             FROM Security.Users
             WHERE Email = @Email AND IsDeleted = 0";
 
@@ -53,7 +53,7 @@ public class UserRepository : IUserRepository
             SELECT u.Id, u.Email, u.PasswordHash, u.PasswordSalt, u.Role, u.IsActive, u.IsEmailVerified,
                    u.EmailVerificationToken, u.EmailVerificationExpiry, u.PasswordResetToken,
                    u.PasswordResetExpiry, u.FailedLoginAttempts, u.LockoutEnd, u.LastLoginAt,
-                   u.CreatedAt, u.UpdatedAt, u.IsDeleted, u.TwoFactorEnabled, u.TwoFactorSecret, u.BackupCodes,
+                   u.CreatedAt, u.UpdatedAt, u.IsDeleted, u.TwoFactorEnabled, u.TwoFactorSecret, u.BackupCodes, u.HasPassword,
                    p.Id, p.UserId, p.FirstName, p.LastName, p.PhoneNumber, p.Address,
                    p.City, p.Country, p.DateOfBirth, p.ProfilePictureUrl, p.CreatedAt, p.UpdatedAt
             FROM Security.Users u
@@ -83,12 +83,12 @@ public class UserRepository : IUserRepository
             (Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
              EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
              PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-             CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes)
+             CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes, HasPassword)
             VALUES
             (@Id, @Email, @PasswordHash, @PasswordSalt, @Role, @IsActive, @IsEmailVerified,
              @EmailVerificationToken, @EmailVerificationExpiry, @PasswordResetToken,
              @PasswordResetExpiry, @FailedLoginAttempts, @LockoutEnd, @LastLoginAt,
-             @CreatedAt, @UpdatedAt, @IsDeleted, @TwoFactorEnabled, @TwoFactorSecret, @BackupCodes)";
+             @CreatedAt, @UpdatedAt, @IsDeleted, @TwoFactorEnabled, @TwoFactorSecret, @BackupCodes, @HasPassword)";
 
         user.Id = Guid.NewGuid();
         user.CreatedAt = DateTime.UtcNow;
@@ -110,7 +110,7 @@ public class UserRepository : IUserRepository
                 PasswordResetToken = @PasswordResetToken, PasswordResetExpiry = @PasswordResetExpiry,
                 FailedLoginAttempts = @FailedLoginAttempts, LockoutEnd = @LockoutEnd,
                 LastLoginAt = @LastLoginAt, UpdatedAt = @UpdatedAt, IsDeleted = @IsDeleted,
-                TwoFactorEnabled = @TwoFactorEnabled, TwoFactorSecret = @TwoFactorSecret, BackupCodes = @BackupCodes
+                TwoFactorEnabled = @TwoFactorEnabled, TwoFactorSecret = @TwoFactorSecret, BackupCodes = @BackupCodes, HasPassword = @HasPassword
             WHERE Id = @Id";
 
         user.UpdatedAt = DateTime.UtcNow;
@@ -223,7 +223,7 @@ public class UserRepository : IUserRepository
             SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
                    EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
                    PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes
+                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes, HasPassword
             FROM Security.Users
             WHERE EmailVerificationToken = @Token AND IsDeleted = 0";
 
