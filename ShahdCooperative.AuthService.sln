@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShahdCooperative.AuthServic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShahdCooperative.AuthService.Infrastructure", "ShahdCooperative.AuthService.Infrastructure\ShahdCooperative.AuthService.Infrastructure.csproj", "{D95B0716-708F-4478-B719-6287876E4466}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShahdCooperative.AuthService.Application.Tests", "ShahdCooperative.AuthService.Application.Tests\ShahdCooperative.AuthService.Application.Tests.csproj", "{E53A563C-DE2C-46B8-84D0-E6765E136F37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShahdCooperative.AuthService.Infrastructure.Tests", "ShahdCooperative.AuthService.Infrastructure.Tests\ShahdCooperative.AuthService.Infrastructure.Tests.csproj", "{DFD06678-3792-4010-9BF1-FE4A199E0215}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +73,30 @@ Global
 		{D95B0716-708F-4478-B719-6287876E4466}.Release|x64.Build.0 = Release|Any CPU
 		{D95B0716-708F-4478-B719-6287876E4466}.Release|x86.ActiveCfg = Release|Any CPU
 		{D95B0716-708F-4478-B719-6287876E4466}.Release|x86.Build.0 = Release|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Debug|x64.Build.0 = Debug|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Debug|x86.Build.0 = Debug|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Release|x64.ActiveCfg = Release|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Release|x64.Build.0 = Release|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Release|x86.ActiveCfg = Release|Any CPU
+		{E53A563C-DE2C-46B8-84D0-E6765E136F37}.Release|x86.Build.0 = Release|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Debug|x64.Build.0 = Debug|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Debug|x86.Build.0 = Debug|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|x64.ActiveCfg = Release|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|x64.Build.0 = Release|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|x86.ActiveCfg = Release|Any CPU
+		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
