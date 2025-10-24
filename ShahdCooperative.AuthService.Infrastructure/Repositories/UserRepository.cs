@@ -229,4 +229,61 @@ public class UserRepository : IUserRepository
         using var connection = CreateConnection();
         return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Token = token });
     }
+
+    public async Task<(List<User> Users, int TotalCount)> GetAllAsync(int pageNumber, int pageSize, string? searchTerm, string? sortBy, bool sortDescending)
+    {
+        var offset = (pageNumber - 1) * pageSize;
+        var orderBy = sortBy switch
+        {
+            "email" => "Email",
+            "role" => "Role",
+            "createdAt" => "CreatedAt",
+            "lastLoginAt" => "LastLoginAt",
+            _ => "CreatedAt"
+        };
+        var orderDirection = sortDescending ? "DESC" : "ASC";
+
+        var whereClause = string.IsNullOrWhiteSpace(searchTerm)
+            ? "WHERE IsDeleted = 0"
+            : "WHERE IsDeleted = 0 AND Email LIKE @SearchTerm";
+
+        var sql = $@"
+            SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
+                   EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
+                   PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
+                   CreatedAt, UpdatedAt, IsDeleted
+            FROM Security.Users
+            {whereClause}
+            ORDER BY {orderBy} {orderDirection}
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+
+            SELECT COUNT(*)
+            FROM Security.Users
+            {whereClause};";
+
+        using var connection = CreateConnection();
+        using var multi = await connection.QueryMultipleAsync(sql, new
+        {
+            SearchTerm = searchTerm != null ? $"%{searchTerm}%" : null,
+            Offset = offset,
+            PageSize = pageSize
+        });
+
+        var users = (await multi.ReadAsync<User>()).ToList();
+        var totalCount = await multi.ReadSingleAsync<int>();
+
+        return (users, totalCount);
+    }
+
+    public async Task UpdateRoleAsync(Guid userId, string role)
+    {
+        const string sql = @"
+            UPDATE Security.Users
+            SET Role = @Role, UpdatedAt = @UpdatedAt
+            WHERE Id = @UserId";
+
+        using var connection = CreateConnection();
+        await connection.ExecuteAsync(sql, new { UserId = userId, Role = role, UpdatedAt = DateTime.UtcNow });
+    }
 }

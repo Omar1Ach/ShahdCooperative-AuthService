@@ -18,4 +18,6 @@ public interface IUserRepository
     Task UpdatePasswordAsync(Guid userId, string passwordHash, string passwordSalt);
     Task VerifyEmailAsync(Guid userId);
     Task<User?> GetByEmailVerificationTokenAsync(string token);
+    Task<(List<User> Users, int TotalCount)> GetAllAsync(int pageNumber, int pageSize, string? searchTerm, string? sortBy, bool sortDescending);
+    Task UpdateRoleAsync(Guid userId, string role);
 }
