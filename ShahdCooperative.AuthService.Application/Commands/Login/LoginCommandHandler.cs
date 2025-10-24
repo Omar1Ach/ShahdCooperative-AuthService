@@ -122,9 +122,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         {
             UserId = user.Id,
             Action = "Login",
+            Result = "Success",
             IpAddress = request.IpAddress,
             UserAgent = request.UserAgent,
-            Success = true,
             CreatedAt = DateTime.UtcNow
         });
 
@@ -163,10 +163,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         {
             UserId = userId,
             Action = "Login",
+            Result = "Failed",
             IpAddress = ipAddress,
             UserAgent = userAgent,
-            Success = false,
-            FailureReason = $"{reason} - Email: {email}",
+            Details = $"{reason} - Email: {email}",
             CreatedAt = DateTime.UtcNow
         });
     }

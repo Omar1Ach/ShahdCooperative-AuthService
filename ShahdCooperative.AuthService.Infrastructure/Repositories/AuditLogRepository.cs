@@ -23,9 +23,9 @@ public class AuditLogRepository : IAuditLogRepository
     {
         const string sql = @"
             INSERT INTO Security.AuditLogs
-            (Id, UserId, Action, IpAddress, UserAgent, Success, FailureReason, CreatedAt)
+            (Id, UserId, Action, Result, IpAddress, UserAgent, Details, CreatedAt)
             VALUES
-            (@Id, @UserId, @Action, @IpAddress, @UserAgent, @Success, @FailureReason, @CreatedAt)";
+            (@Id, @UserId, @Action, @Result, @IpAddress, @UserAgent, @Details, @CreatedAt)";
 
         auditLog.Id = Guid.NewGuid();
         auditLog.CreatedAt = DateTime.UtcNow;
@@ -39,7 +39,7 @@ public class AuditLogRepository : IAuditLogRepository
     public async Task<IEnumerable<AuditLog>> GetByUserIdAsync(Guid userId, int limit = 50)
     {
         const string sql = @"
-            SELECT TOP (@Limit) Id, UserId, Action, IpAddress, UserAgent, Success, FailureReason, CreatedAt
+            SELECT TOP (@Limit) Id, UserId, Action, Result, IpAddress, UserAgent, Details, CreatedAt
             FROM Security.AuditLogs
             WHERE UserId = @UserId
             ORDER BY CreatedAt DESC";
@@ -51,7 +51,7 @@ public class AuditLogRepository : IAuditLogRepository
     public async Task<IEnumerable<AuditLog>> GetRecentAsync(int limit = 100)
     {
         const string sql = @"
-            SELECT TOP (@Limit) Id, UserId, Action, IpAddress, UserAgent, Success, FailureReason, CreatedAt
+            SELECT TOP (@Limit) Id, UserId, Action, Result, IpAddress, UserAgent, Details, CreatedAt
             FROM Security.AuditLogs
             ORDER BY CreatedAt DESC";
 

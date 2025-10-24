@@ -38,7 +38,7 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, bool>
         {
             UserId = refreshToken.UserId,
             Action = "Logout",
-            Success = true,
+            Result = "Success",
             CreatedAt = DateTime.UtcNow
         });
 

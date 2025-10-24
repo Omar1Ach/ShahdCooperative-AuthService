@@ -91,7 +91,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         {
             UserId = userId,
             Action = "Register",
-            Success = true,
+            Result = "Success",
             CreatedAt = DateTime.UtcNow
         });
 
