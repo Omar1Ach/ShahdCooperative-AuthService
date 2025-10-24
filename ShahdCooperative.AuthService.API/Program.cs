@@ -85,6 +85,9 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Add Memory Cache for rate limiting
+builder.Services.AddMemoryCache();
+
 // Add Application and Infrastructure layers
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
@@ -104,6 +107,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<RateLimitingMiddleware>();
 
 // Enable Swagger for testing
 app.UseSwagger();

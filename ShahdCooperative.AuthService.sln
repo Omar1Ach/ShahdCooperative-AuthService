@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShahdCooperative.AuthServic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShahdCooperative.AuthService.Infrastructure.Tests", "ShahdCooperative.AuthService.Infrastructure.Tests\ShahdCooperative.AuthService.Infrastructure.Tests.csproj", "{DFD06678-3792-4010-9BF1-FE4A199E0215}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShahdCooperative.AuthService.API.Tests", "ShahdCooperative.AuthService.API.Tests\ShahdCooperative.AuthService.API.Tests.csproj", "{DE8A2514-E580-4002-BB93-8F2A1120D54C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|x64.Build.0 = Release|Any CPU
 		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|x86.ActiveCfg = Release|Any CPU
 		{DFD06678-3792-4010-9BF1-FE4A199E0215}.Release|x86.Build.0 = Release|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Debug|x64.Build.0 = Debug|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Debug|x86.Build.0 = Debug|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Release|x64.ActiveCfg = Release|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Release|x64.Build.0 = Release|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Release|x86.ActiveCfg = Release|Any CPU
+		{DE8A2514-E580-4002-BB93-8F2A1120D54C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

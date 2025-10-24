@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ShahdCooperative.AuthService.API.Middleware;
 using ShahdCooperative.AuthService.Application.Commands.ChangePassword;
 using ShahdCooperative.AuthService.Application.Commands.ForgotPassword;
 using ShahdCooperative.AuthService.Application.Commands.Login;
@@ -9,6 +10,7 @@ using ShahdCooperative.AuthService.Application.Commands.Register;
 using ShahdCooperative.AuthService.Application.Commands.ResetPassword;
 using ShahdCooperative.AuthService.Application.Commands.VerifyEmail;
 using ShahdCooperative.AuthService.Application.DTOs;
+using ShahdCooperative.AuthService.Domain.Interfaces;
 
 namespace ShahdCooperative.AuthService.API.Controllers;
 
@@ -17,20 +19,32 @@ namespace ShahdCooperative.AuthService.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ICaptchaService _captchaService;
 
-    public AuthController(IMediator mediator)
+    public AuthController(IMediator mediator, ICaptchaService captchaService)
     {
         _mediator = mediator;
+        _captchaService = captchaService;
     }
 
     /// <summary>
     /// Register a new user
     /// </summary>
     [HttpPost("register")]
+    [RateLimit("auth")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        // Verify CAPTCHA token
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var isCaptchaValid = await _captchaService.VerifyTokenAsync(request.CaptchaToken ?? string.Empty, ipAddress);
+
+        if (!isCaptchaValid)
+        {
+            return BadRequest(new { error = "CAPTCHA verification failed. Please try again." });
+        }
+
         var command = new RegisterCommand(request.Email, request.Password);
         var response = await _mediator.Send(command);
         return CreatedAtAction(nameof(Register), response);
@@ -40,13 +54,22 @@ public class AuthController : ControllerBase
     /// Login with email and password
     /// </summary>
     [HttpPost("login")]
+    [RateLimit("auth")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
 
+        // Verify CAPTCHA token
+        var isCaptchaValid = await _captchaService.VerifyTokenAsync(request.CaptchaToken ?? string.Empty, ipAddress);
+
+        if (!isCaptchaValid)
+        {
+            return BadRequest(new { error = "CAPTCHA verification failed. Please try again." });
+        }
+
+        var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
         var command = new LoginCommand(request.Email, request.Password, ipAddress, userAgent);
         var response = await _mediator.Send(command);
         return Ok(response);
@@ -107,6 +130,7 @@ public class AuthController : ControllerBase
     /// Request password reset token
     /// </summary>
     [HttpPost("forgot-password")]
+    [RateLimit("auth")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
