@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ICaptchaService, GoogleRecaptchaService>();
+        services.AddScoped<ITwoFactorService, TwoFactorService>();
 
         // Register HttpClient for CAPTCHA verification
         services.AddHttpClient();

@@ -92,6 +92,33 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         // Reset failed login attempts
         await _userRepository.ResetFailedLoginAttemptsAsync(user.Id);
 
+        // Check if 2FA is enabled
+        if (user.TwoFactorEnabled)
+        {
+            // Log pending 2FA verification
+            await _auditLogRepository.CreateAsync(new AuditLog
+            {
+                UserId = user.Id,
+                Action = "Login",
+                Result = "Pending 2FA",
+                IpAddress = request.IpAddress,
+                UserAgent = request.UserAgent,
+                Details = $"User {user.Email} passed password verification, pending 2FA",
+                CreatedAt = DateTime.UtcNow
+            });
+
+            // Return response indicating 2FA is required
+            return new LoginResponse
+            {
+                AccessToken = string.Empty,
+                RefreshToken = string.Empty,
+                ExpiresAt = DateTime.UtcNow,
+                User = _mapper.Map<UserDto>(user),
+                Requires2FA = true,
+                Message = "Two-factor authentication required. Please provide your 2FA code."
+            };
+        }
+
         // Update last login
         await _userRepository.UpdateLastLoginAsync(user.Id);
 

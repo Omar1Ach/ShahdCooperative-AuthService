@@ -22,6 +22,11 @@ public class User
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public bool IsDeleted { get; set; } = false;
 
+    // Two-Factor Authentication
+    public bool TwoFactorEnabled { get; set; } = false;
+    public string? TwoFactorSecret { get; set; }
+    public string? BackupCodes { get; set; } // JSON array of hashed backup codes
+
     // Navigation property for profile (loaded separately with Dapper)
     public UserProfile? Profile { get; set; }
 }

@@ -25,7 +25,7 @@ public class UserRepository : IUserRepository
             SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
                    EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
                    PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-                   CreatedAt, UpdatedAt, IsDeleted
+                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes
             FROM Security.Users
             WHERE Id = @Id AND IsDeleted = 0";
 
@@ -39,7 +39,7 @@ public class UserRepository : IUserRepository
             SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
                    EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
                    PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-                   CreatedAt, UpdatedAt, IsDeleted
+                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes
             FROM Security.Users
             WHERE Email = @Email AND IsDeleted = 0";
 
@@ -53,7 +53,7 @@ public class UserRepository : IUserRepository
             SELECT u.Id, u.Email, u.PasswordHash, u.PasswordSalt, u.Role, u.IsActive, u.IsEmailVerified,
                    u.EmailVerificationToken, u.EmailVerificationExpiry, u.PasswordResetToken,
                    u.PasswordResetExpiry, u.FailedLoginAttempts, u.LockoutEnd, u.LastLoginAt,
-                   u.CreatedAt, u.UpdatedAt, u.IsDeleted,
+                   u.CreatedAt, u.UpdatedAt, u.IsDeleted, u.TwoFactorEnabled, u.TwoFactorSecret, u.BackupCodes,
                    p.Id, p.UserId, p.FirstName, p.LastName, p.PhoneNumber, p.Address,
                    p.City, p.Country, p.DateOfBirth, p.ProfilePictureUrl, p.CreatedAt, p.UpdatedAt
             FROM Security.Users u
@@ -83,12 +83,12 @@ public class UserRepository : IUserRepository
             (Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
              EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
              PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-             CreatedAt, UpdatedAt, IsDeleted)
+             CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes)
             VALUES
             (@Id, @Email, @PasswordHash, @PasswordSalt, @Role, @IsActive, @IsEmailVerified,
              @EmailVerificationToken, @EmailVerificationExpiry, @PasswordResetToken,
              @PasswordResetExpiry, @FailedLoginAttempts, @LockoutEnd, @LastLoginAt,
-             @CreatedAt, @UpdatedAt, @IsDeleted)";
+             @CreatedAt, @UpdatedAt, @IsDeleted, @TwoFactorEnabled, @TwoFactorSecret, @BackupCodes)";
 
         user.Id = Guid.NewGuid();
         user.CreatedAt = DateTime.UtcNow;
@@ -109,7 +109,8 @@ public class UserRepository : IUserRepository
                 EmailVerificationToken = @EmailVerificationToken, EmailVerificationExpiry = @EmailVerificationExpiry,
                 PasswordResetToken = @PasswordResetToken, PasswordResetExpiry = @PasswordResetExpiry,
                 FailedLoginAttempts = @FailedLoginAttempts, LockoutEnd = @LockoutEnd,
-                LastLoginAt = @LastLoginAt, UpdatedAt = @UpdatedAt, IsDeleted = @IsDeleted
+                LastLoginAt = @LastLoginAt, UpdatedAt = @UpdatedAt, IsDeleted = @IsDeleted,
+                TwoFactorEnabled = @TwoFactorEnabled, TwoFactorSecret = @TwoFactorSecret, BackupCodes = @BackupCodes
             WHERE Id = @Id";
 
         user.UpdatedAt = DateTime.UtcNow;
@@ -222,7 +223,7 @@ public class UserRepository : IUserRepository
             SELECT Id, Email, PasswordHash, PasswordSalt, Role, IsActive, IsEmailVerified,
                    EmailVerificationToken, EmailVerificationExpiry, PasswordResetToken,
                    PasswordResetExpiry, FailedLoginAttempts, LockoutEnd, LastLoginAt,
-                   CreatedAt, UpdatedAt, IsDeleted
+                   CreatedAt, UpdatedAt, IsDeleted, TwoFactorEnabled, TwoFactorSecret, BackupCodes
             FROM Security.Users
             WHERE EmailVerificationToken = @Token AND IsDeleted = 0";
 
