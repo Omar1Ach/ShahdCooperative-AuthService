@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using ShahdCooperative.AuthService.Application.DTOs;
 using ShahdCooperative.AuthService.Domain.Entities;
 using ShahdCooperative.AuthService.Domain.Enums;
+using ShahdCooperative.AuthService.Domain.Events;
 using ShahdCooperative.AuthService.Domain.Interfaces;
 
 namespace ShahdCooperative.AuthService.Application.Commands.Register;
@@ -17,6 +18,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
     private readonly ITokenService _tokenService;
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
+    private readonly IMessagePublisher _messagePublisher;
 
     public RegisterCommandHandler(
         IUserRepository userRepository,
@@ -25,7 +27,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
         IMapper mapper,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IMessagePublisher messagePublisher)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
@@ -34,6 +37,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         _tokenService = tokenService;
         _mapper = mapper;
         _configuration = configuration;
+        _messagePublisher = messagePublisher;
     }
 
     public async Task<LoginResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -90,6 +94,22 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
             Success = true,
             CreatedAt = DateTime.UtcNow
         });
+
+        // Publish event to RabbitMQ
+        try
+        {
+            await _messagePublisher.PublishAsync(new UserRegisteredEvent
+            {
+                UserId = userId,
+                Email = user.Email,
+                Role = user.Role,
+                RegisteredAt = DateTime.UtcNow
+            }, "user.registered");
+        }
+        catch (Exception)
+        {
+            // Log error but don't fail the request
+        }
 
         // Return response
         return new LoginResponse

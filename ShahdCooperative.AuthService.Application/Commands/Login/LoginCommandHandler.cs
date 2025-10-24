@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using ShahdCooperative.AuthService.Application.DTOs;
 using ShahdCooperative.AuthService.Domain.Entities;
+using ShahdCooperative.AuthService.Domain.Events;
 using ShahdCooperative.AuthService.Domain.Exceptions;
 using ShahdCooperative.AuthService.Domain.Interfaces;
 
@@ -17,6 +18,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
     private readonly ITokenService _tokenService;
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
+    private readonly IMessagePublisher _messagePublisher;
 
     private const int MaxFailedAttempts = 5;
     private const int LockoutMinutes = 15;
@@ -28,7 +30,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
         IMapper mapper,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IMessagePublisher messagePublisher)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
@@ -37,6 +40,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         _tokenService = tokenService;
         _mapper = mapper;
         _configuration = configuration;
+        _messagePublisher = messagePublisher;
     }
 
     public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -123,6 +127,22 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
             Success = true,
             CreatedAt = DateTime.UtcNow
         });
+
+        // Publish event to RabbitMQ
+        try
+        {
+            await _messagePublisher.PublishAsync(new UserLoggedInEvent
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                IpAddress = request.IpAddress,
+                LoggedInAt = DateTime.UtcNow
+            }, "user.logged-in");
+        }
+        catch (Exception)
+        {
+            // Log error but don't fail the request
+        }
 
         // Update user's LastLoginAt for response
         user.LastLoginAt = DateTime.UtcNow;

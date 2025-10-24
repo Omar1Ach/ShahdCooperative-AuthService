@@ -17,6 +17,7 @@ public static class DependencyInjection
         // Register services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<ITokenService, TokenService>();
+        services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
 
         return services;
     }
