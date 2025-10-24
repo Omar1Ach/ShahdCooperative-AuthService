@@ -1278,18 +1278,6 @@ docker run -d -p 8080:80 -p 8443:443 \
 
 ---
 
-## Contributing
-
-This is a proprietary project for ShahdCooperative. If you're part of the development team:
-
-1. Create a feature branch from `main`
-2. Follow clean code principles and existing patterns
-3. Write unit tests for new features
-4. Update this README if adding new features
-5. Submit a pull request with detailed description
-
----
-
 ## License
 
 **Proprietary License** - Copyright © 2025 ShahdCooperative
