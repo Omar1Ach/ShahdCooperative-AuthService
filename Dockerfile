@@ -25,14 +25,11 @@ RUN dotnet publish "ShahdCooperative.AuthService.API.csproj" -c Release -o /app/
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
+EXPOSE 8081
 
 # Copy published files
 COPY --from=publish /app/publish .
-
-# Create logs directory
-RUN mkdir -p /app/Logs
 
 # Set entry point
 ENTRYPOINT ["dotnet", "ShahdCooperative.AuthService.API.dll"]
