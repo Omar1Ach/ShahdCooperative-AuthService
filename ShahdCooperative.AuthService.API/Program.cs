@@ -124,7 +124,12 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseMiddleware<RateLimitingMiddleware>();
+
+// Skip rate limiting in Testing environment
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseMiddleware<RateLimitingMiddleware>();
+}
 
 // Enable Swagger for testing
 app.UseSwagger();
@@ -158,3 +163,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// Make Program accessible to integration tests
+public partial class Program { }

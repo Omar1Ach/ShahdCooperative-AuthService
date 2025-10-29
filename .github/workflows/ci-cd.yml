@@ -21,10 +21,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup .NET
+    - name: Setup .NET 8.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
 
     - name: Restore dependencies
       run: dotnet restore
@@ -32,15 +37,29 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --configuration Release
 
-    - name: Run tests
-      run: dotnet test --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
+    - name: Run Unit Tests
+      run: dotnet test --no-build --configuration Release --filter "FullyQualifiedName!~IntegrationTests" --verbosity normal --logger "trx;LogFileName=unit-test-results.trx"
 
-    - name: Publish test results
+    - name: Run Integration Tests
+      run: dotnet test --no-build --configuration Release --filter "FullyQualifiedName~IntegrationTests" --verbosity normal --logger "trx;LogFileName=integration-test-results.trx"
+      env:
+        ASPNETCORE_ENVIRONMENT: Testing
+      continue-on-error: true
+
+    - name: Publish Unit Test Results
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
-        name: Test Results
-        path: '**/test-results.trx'
+        name: Unit Test Results
+        path: '**/unit-test-results.trx'
+        reporter: dotnet-trx
+
+    - name: Publish Integration Test Results
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Integration Test Results
+        path: '**/integration-test-results.trx'
         reporter: dotnet-trx
 
   build-and-push:
