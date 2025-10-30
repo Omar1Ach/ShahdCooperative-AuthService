@@ -64,6 +64,7 @@ public static class DatabaseInitializer
                     [ExpiresAt] DATETIME2 NOT NULL,
                     [CreatedAt] DATETIME2 NOT NULL,
                     [RevokedAt] DATETIME2,
+                    [ReplacedByToken] NVARCHAR(255),
                     [IsRevoked] BIT NOT NULL DEFAULT 0,
                     [DeviceInfo] NVARCHAR(500),
                     [IpAddress] NVARCHAR(50),
