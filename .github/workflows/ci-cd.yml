@@ -18,6 +18,20 @@ jobs:
       contents: read
       checks: write
 
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: YourStrong@Passw0rd
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v4
 
@@ -44,6 +58,7 @@ jobs:
       run: dotnet test --no-build --configuration Release --filter "FullyQualifiedName~IntegrationTests" --verbosity normal --logger "trx;LogFileName=integration-test-results.trx"
       env:
         ASPNETCORE_ENVIRONMENT: Testing
+        USE_DOCKER_SQL: true
       continue-on-error: true
 
     - name: Publish Unit Test Results
