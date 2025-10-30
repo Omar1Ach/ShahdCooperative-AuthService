@@ -1,6 +1,7 @@
+using Dapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -10,17 +11,33 @@ namespace ShahdCooperative.AuthService.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private SqliteConnection? _connection;
-    private readonly string _connectionString = "DataSource=:memory:";
+    private readonly string _connectionString;
+    private readonly string _databaseName = $"AuthService_IntegrationTests_{Guid.NewGuid():N}";
+
+    public CustomWebApplicationFactory()
+    {
+        // Use SQL Server LocalDB for Windows or provide Docker connection string
+        // For LocalDB: "Server=(localdb)\\mssqllocaldb;Database={dbName};Trusted_Connection=True;MultipleActiveResultSets=true"
+        // For Docker: "Server=localhost,1433;Database={dbName};User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True"
+
+        var useDocker = Environment.GetEnvironmentVariable("USE_DOCKER_SQL") == "true";
+
+        if (useDocker)
+        {
+            _connectionString = $"Server=localhost,1433;Database={_databaseName};User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+        }
+        else
+        {
+            _connectionString = $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;MultipleActiveResultSets=true";
+        }
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
 
-        // Initialize SQLite database connection and keep it open for the lifetime of the factory
-        _connection = new SqliteConnection(_connectionString);
-        _connection.Open();
-        DatabaseInitializer.Initialize(_connectionString);
+        // Initialize SQL Server database
+        InitializeDatabase();
 
         builder.ConfigureAppConfiguration((context, config) =>
         {
@@ -57,12 +74,51 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 
+    private void InitializeDatabase()
+    {
+        try
+        {
+            // Create database if it doesn't exist
+            var masterConnection = _connectionString.Replace(_databaseName, "master");
+            using (var connection = new SqlConnection(masterConnection))
+            {
+                connection.Open();
+                var checkDbSql = $"SELECT database_id FROM sys.databases WHERE name = '{_databaseName}'";
+                var dbExists = connection.ExecuteScalar<int?>(checkDbSql);
+
+                if (dbExists == null)
+                {
+                    connection.Execute($"CREATE DATABASE [{_databaseName}]");
+                }
+            }
+
+            // Initialize schema
+            DatabaseInitializer.Initialize(_connectionString);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Database initialization failed: {ex.Message}");
+            Console.WriteLine("Make sure SQL Server LocalDB is installed or Docker SQL Server is running.");
+            throw;
+        }
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            _connection?.Close();
-            _connection?.Dispose();
+            try
+            {
+                // Drop test database
+                var masterConnection = _connectionString.Replace(_databaseName, "master");
+                using var connection = new SqlConnection(masterConnection);
+                connection.Open();
+                connection.Execute($"DROP DATABASE IF EXISTS [{_databaseName}]");
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
         }
         base.Dispose(disposing);
     }

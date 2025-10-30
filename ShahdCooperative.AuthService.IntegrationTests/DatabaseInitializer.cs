@@ -1,6 +1,6 @@
 using System.Data;
 using Dapper;
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 
 namespace ShahdCooperative.AuthService.IntegrationTests;
 
@@ -8,98 +8,119 @@ public static class DatabaseInitializer
 {
     public static void Initialize(string connectionString)
     {
-        using var connection = new SqliteConnection(connectionString);
+        using var connection = new SqlConnection(connectionString);
         connection.Open();
 
-        // Create Security schema (SQLite doesn't have schemas, but we'll use tables with prefix)
+        // Create Security schema and tables
+        CreateSchema(connection);
         CreateTables(connection);
+    }
+
+    private static void CreateSchema(IDbConnection connection)
+    {
+        connection.Execute("IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Security') EXEC('CREATE SCHEMA Security')");
     }
 
     private static void CreateTables(IDbConnection connection)
     {
         // Users table
         connection.Execute(@"
-            CREATE TABLE IF NOT EXISTS Users (
-                Id TEXT PRIMARY KEY,
-                Email TEXT NOT NULL UNIQUE,
-                PasswordHash TEXT,
-                PasswordSalt TEXT,
-                Role TEXT NOT NULL DEFAULT 'Customer',
-                IsActive INTEGER NOT NULL DEFAULT 1,
-                IsEmailVerified INTEGER NOT NULL DEFAULT 0,
-                EmailVerificationToken TEXT,
-                EmailVerificationExpiry TEXT,
-                PasswordResetToken TEXT,
-                PasswordResetExpiry TEXT,
-                FailedLoginAttempts INTEGER NOT NULL DEFAULT 0,
-                LockoutEnd TEXT,
-                LastLoginAt TEXT,
-                CreatedAt TEXT NOT NULL,
-                UpdatedAt TEXT NOT NULL,
-                IsDeleted INTEGER NOT NULL DEFAULT 0,
-                TwoFactorEnabled INTEGER NOT NULL DEFAULT 0,
-                TwoFactorSecret TEXT,
-                BackupCodes TEXT,
-                HasPassword INTEGER NOT NULL DEFAULT 1
-            )
+            IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Security].[Users]') AND type in (N'U'))
+            BEGIN
+                CREATE TABLE [Security].[Users] (
+                    [Id] UNIQUEIDENTIFIER PRIMARY KEY,
+                    [Email] NVARCHAR(255) NOT NULL UNIQUE,
+                    [PasswordHash] NVARCHAR(MAX),
+                    [PasswordSalt] NVARCHAR(MAX),
+                    [Role] NVARCHAR(50) NOT NULL DEFAULT 'Customer',
+                    [IsActive] BIT NOT NULL DEFAULT 1,
+                    [IsEmailVerified] BIT NOT NULL DEFAULT 0,
+                    [EmailVerificationToken] NVARCHAR(255),
+                    [EmailVerificationExpiry] DATETIME2,
+                    [PasswordResetToken] NVARCHAR(255),
+                    [PasswordResetExpiry] DATETIME2,
+                    [FailedLoginAttempts] INT NOT NULL DEFAULT 0,
+                    [LockoutEnd] DATETIME2,
+                    [LastLoginAt] DATETIME2,
+                    [CreatedAt] DATETIME2 NOT NULL,
+                    [UpdatedAt] DATETIME2 NOT NULL,
+                    [IsDeleted] BIT NOT NULL DEFAULT 0,
+                    [TwoFactorEnabled] BIT NOT NULL DEFAULT 0,
+                    [TwoFactorSecret] NVARCHAR(MAX),
+                    [BackupCodes] NVARCHAR(MAX),
+                    [HasPassword] BIT NOT NULL DEFAULT 1
+                )
+            END
         ");
 
         // RefreshTokens table
         connection.Execute(@"
-            CREATE TABLE IF NOT EXISTS RefreshTokens (
-                Id TEXT PRIMARY KEY,
-                UserId TEXT NOT NULL,
-                Token TEXT NOT NULL UNIQUE,
-                ExpiresAt TEXT NOT NULL,
-                CreatedAt TEXT NOT NULL,
-                RevokedAt TEXT,
-                IsRevoked INTEGER NOT NULL DEFAULT 0,
-                DeviceInfo TEXT,
-                IpAddress TEXT,
-                FOREIGN KEY (UserId) REFERENCES Users(Id)
-            )
+            IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Security].[RefreshTokens]') AND type in (N'U'))
+            BEGIN
+                CREATE TABLE [Security].[RefreshTokens] (
+                    [Id] UNIQUEIDENTIFIER PRIMARY KEY,
+                    [UserId] UNIQUEIDENTIFIER NOT NULL,
+                    [Token] NVARCHAR(255) NOT NULL UNIQUE,
+                    [ExpiresAt] DATETIME2 NOT NULL,
+                    [CreatedAt] DATETIME2 NOT NULL,
+                    [RevokedAt] DATETIME2,
+                    [IsRevoked] BIT NOT NULL DEFAULT 0,
+                    [DeviceInfo] NVARCHAR(500),
+                    [IpAddress] NVARCHAR(50),
+                    FOREIGN KEY ([UserId]) REFERENCES [Security].[Users]([Id])
+                )
+            END
         ");
 
         // AuditLogs table
         connection.Execute(@"
-            CREATE TABLE IF NOT EXISTS AuditLogs (
-                Id TEXT PRIMARY KEY,
-                UserId TEXT,
-                Action TEXT NOT NULL,
-                Details TEXT,
-                IpAddress TEXT,
-                UserAgent TEXT,
-                Timestamp TEXT NOT NULL,
-                FOREIGN KEY (UserId) REFERENCES Users(Id)
-            )
+            IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Security].[AuditLogs]') AND type in (N'U'))
+            BEGIN
+                CREATE TABLE [Security].[AuditLogs] (
+                    [Id] UNIQUEIDENTIFIER PRIMARY KEY,
+                    [UserId] UNIQUEIDENTIFIER,
+                    [Action] NVARCHAR(100) NOT NULL,
+                    [Details] NVARCHAR(MAX),
+                    [IpAddress] NVARCHAR(50),
+                    [UserAgent] NVARCHAR(500),
+                    [Timestamp] DATETIME2 NOT NULL,
+                    FOREIGN KEY ([UserId]) REFERENCES [Security].[Users]([Id])
+                )
+            END
         ");
 
         // PasswordResetTokens table
         connection.Execute(@"
-            CREATE TABLE IF NOT EXISTS PasswordResetTokens (
-                Id TEXT PRIMARY KEY,
-                UserId TEXT NOT NULL,
-                Token TEXT NOT NULL UNIQUE,
-                ExpiresAt TEXT NOT NULL,
-                CreatedAt TEXT NOT NULL,
-                IsUsed INTEGER NOT NULL DEFAULT 0,
-                FOREIGN KEY (UserId) REFERENCES Users(Id)
-            )
+            IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Security].[PasswordResetTokens]') AND type in (N'U'))
+            BEGIN
+                CREATE TABLE [Security].[PasswordResetTokens] (
+                    [Id] UNIQUEIDENTIFIER PRIMARY KEY,
+                    [UserId] UNIQUEIDENTIFIER NOT NULL,
+                    [Token] NVARCHAR(255) NOT NULL UNIQUE,
+                    [ExpiresAt] DATETIME2 NOT NULL,
+                    [CreatedAt] DATETIME2 NOT NULL,
+                    [IsUsed] BIT NOT NULL DEFAULT 0,
+                    FOREIGN KEY ([UserId]) REFERENCES [Security].[Users]([Id])
+                )
+            END
         ");
 
         // ExternalLogins table
         connection.Execute(@"
-            CREATE TABLE IF NOT EXISTS ExternalLogins (
-                Id TEXT PRIMARY KEY,
-                UserId TEXT NOT NULL,
-                Provider TEXT NOT NULL,
-                ProviderKey TEXT NOT NULL,
-                Email TEXT NOT NULL,
-                ProviderDisplayName TEXT,
-                LastLoginAt TEXT,
-                CreatedAt TEXT NOT NULL,
-                FOREIGN KEY (UserId) REFERENCES Users(Id)
-            )
+            IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Security].[ExternalLogins]') AND type in (N'U'))
+            BEGIN
+                CREATE TABLE [Security].[ExternalLogins] (
+                    [Id] UNIQUEIDENTIFIER PRIMARY KEY,
+                    [UserId] UNIQUEIDENTIFIER NOT NULL,
+                    [Provider] NVARCHAR(50) NOT NULL,
+                    [ProviderKey] NVARCHAR(255) NOT NULL,
+                    [Email] NVARCHAR(255) NOT NULL,
+                    [ProviderDisplayName] NVARCHAR(255),
+                    [LastLoginAt] DATETIME2,
+                    [CreatedAt] DATETIME2 NOT NULL,
+                    FOREIGN KEY ([UserId]) REFERENCES [Security].[Users]([Id])
+                )
+            END
         ");
     }
 }
