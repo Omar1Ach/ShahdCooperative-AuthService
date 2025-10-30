@@ -81,10 +81,11 @@ public static class DatabaseInitializer
                     [Id] UNIQUEIDENTIFIER PRIMARY KEY,
                     [UserId] UNIQUEIDENTIFIER,
                     [Action] NVARCHAR(100) NOT NULL,
+                    [Result] NVARCHAR(50) NOT NULL DEFAULT 'Success',
                     [Details] NVARCHAR(MAX),
                     [IpAddress] NVARCHAR(50),
                     [UserAgent] NVARCHAR(500),
-                    [Timestamp] DATETIME2 NOT NULL,
+                    [CreatedAt] DATETIME2 NOT NULL,
                     FOREIGN KEY ([UserId]) REFERENCES [Security].[Users]([Id])
                 )
             END
