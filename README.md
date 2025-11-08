@@ -820,109 +820,45 @@ Response: 200 OK
 
 ## Database Schema
 
-### Security.Users
-```sql
-CREATE TABLE Security.Users (
-    Id UNIQUEIDENTIFIER PRIMARY KEY,
-    Email NVARCHAR(255) NOT NULL UNIQUE,
-    PasswordHash NVARCHAR(255) NOT NULL,
-    PasswordSalt NVARCHAR(255) NOT NULL,
-    HasPassword BIT NOT NULL DEFAULT 1,
-    Role NVARCHAR(50) NOT NULL DEFAULT 'Customer',
-    IsActive BIT NOT NULL DEFAULT 1,
-    IsEmailVerified BIT NOT NULL DEFAULT 0,
-    EmailVerificationToken NVARCHAR(255),
-    EmailVerificationExpiry DATETIME2,
-    PasswordResetToken NVARCHAR(255),
-    PasswordResetExpiry DATETIME2,
-    FailedLoginAttempts INT NOT NULL DEFAULT 0,
-    LockoutEnd DATETIME2,
-    LastLoginAt DATETIME2,
-    TwoFactorEnabled BIT NOT NULL DEFAULT 0,
-    TwoFactorSecret NVARCHAR(255),
-    BackupCodes NVARCHAR(MAX), -- JSON array
-    IsDeleted BIT NOT NULL DEFAULT 0,
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()
-);
-```
+The AuthService uses the **Security** schema within the shared `ShahdCooperative` database. All tables use GUID primary keys for globally unique identifiers.
 
-### Security.RefreshTokens
-```sql
-CREATE TABLE Security.RefreshTokens (
-    Id UNIQUEIDENTIFIER PRIMARY KEY,
-    UserId UNIQUEIDENTIFIER NOT NULL,
-    Token NVARCHAR(255) NOT NULL UNIQUE,
-    ExpiresAt DATETIME2 NOT NULL,
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    RevokedAt DATETIME2,
-    ReplacedByToken NVARCHAR(255),
-    FOREIGN KEY (UserId) REFERENCES Security.Users(Id)
-);
-```
+### Core Tables
 
-### Security.AuditLogs
-```sql
-CREATE TABLE Security.AuditLogs (
-    Id UNIQUEIDENTIFIER PRIMARY KEY,
-    UserId UNIQUEIDENTIFIER,
-    Action NVARCHAR(100) NOT NULL,
-    Result NVARCHAR(50) NOT NULL,
-    IpAddress NVARCHAR(50),
-    UserAgent NVARCHAR(500),
-    Details NVARCHAR(MAX),
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    FOREIGN KEY (UserId) REFERENCES Security.Users(Id)
-);
-```
+**Security.Users**
+- Primary user authentication and account management table
+- Stores email, password hash/salt, role, account status
+- Supports email verification, password reset tokens
+- Two-factor authentication settings (TOTP secret, backup codes)
+- Account lockout tracking and soft delete support
 
-### Security.ExternalLogins
-```sql
-CREATE TABLE Security.ExternalLogins (
-    Id UNIQUEIDENTIFIER PRIMARY KEY,
-    UserId UNIQUEIDENTIFIER NOT NULL,
-    Provider NVARCHAR(50) NOT NULL,
-    ProviderKey NVARCHAR(255) NOT NULL,
-    ProviderDisplayName NVARCHAR(255),
-    Email NVARCHAR(255) NOT NULL,
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    LastLoginAt DATETIME2,
-    FOREIGN KEY (UserId) REFERENCES Security.Users(Id),
-    UNIQUE (Provider, ProviderKey)
-);
-```
+**Security.RefreshTokens**
+- Manages JWT refresh tokens for session persistence
+- Tracks token expiry, revocation, and rotation
+- Foreign key relationship to Users table
 
-### Security.PasswordResetTokens
-```sql
-CREATE TABLE Security.PasswordResetTokens (
-    Id UNIQUEIDENTIFIER PRIMARY KEY,
-    UserId UNIQUEIDENTIFIER NOT NULL,
-    Token NVARCHAR(255) NOT NULL UNIQUE,
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    ExpiresAt DATETIME2 NOT NULL,
-    UsedAt DATETIME2,
-    FOREIGN KEY (UserId) REFERENCES Security.Users(Id)
-);
-```
+**Security.AuditLogs**
+- Comprehensive security event logging
+- Tracks user actions, results, IP addresses, user agents
+- Supports filtering and reporting for security analysis
 
-### Security.UserProfiles
-```sql
-CREATE TABLE Security.UserProfiles (
-    Id UNIQUEIDENTIFIER PRIMARY KEY,
-    UserId UNIQUEIDENTIFIER NOT NULL UNIQUE,
-    FirstName NVARCHAR(100),
-    LastName NVARCHAR(100),
-    PhoneNumber NVARCHAR(20),
-    Address NVARCHAR(255),
-    City NVARCHAR(100),
-    Country NVARCHAR(100),
-    DateOfBirth DATE,
-    ProfilePictureUrl NVARCHAR(500),
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    FOREIGN KEY (UserId) REFERENCES Security.Users(Id)
-);
-```
+**Security.ExternalLogins**
+- OAuth provider linkage (Google, Facebook)
+- Stores provider keys and display names
+- Tracks last login timestamps per provider
+
+**Security.PasswordResetTokens**
+- Separate table for password reset token lifecycle
+- Tracks creation, expiry, and usage
+- Single-use enforcement
+
+**Security.UserProfiles**
+- Extended user information (name, phone, address, DOB)
+- Profile picture URL storage
+- One-to-one relationship with Users table
+
+**Security.Admins**
+- Admin user metadata and permissions
+- External auth integration for admin accounts
 
 ---
 
@@ -945,14 +881,8 @@ cd ShahdCooperative-AuthService
 ```
 
 2. **Setup Database**
-```sql
--- Create database
-CREATE DATABASE ShahdCooperative;
-GO
 
--- Run the schema creation scripts for all tables
--- (Scripts located in /Database/Schema/ folder if available)
-```
+Ensure the `ShahdCooperative` database exists with all required tables in the Security schema. Database setup is managed at the project level.
 
 3. **Configure Application**
 
